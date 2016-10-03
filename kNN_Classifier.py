@@ -6,9 +6,11 @@ def plotData(pandasData):
     colors = ["r", "g", "b", "m", "y"]
     for i in range(1,6):
         filtered = pandasData[pandasData["TL"]==i]
-        xVals = filtered["x"]
-        yVals = filtered["y"]
-        plt.scatter(xVals, yVals, c=colors[i-1])
+        withL = filtered[filtered["L"].notnull()]
+        withoutL = filtered[filtered["L"].isnull()]
+        plt.scatter(withL["x"], withL["y"], c=colors[i-1], marker="o")
+        plt.scatter(withoutL["x"], withoutL["y"], c=colors[i-1], marker="x")
+
     plt.show()
 
 data = pd.read_csv("knnDataSet.csv")
