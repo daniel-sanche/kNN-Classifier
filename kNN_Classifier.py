@@ -6,7 +6,7 @@ import numpy as np
 import numpy.matlib
 
 def plotData(trainData, testData, classifiedLabels=None, pdf_name="plot.pdf", display_figure=True):
-    colors = ["r", "g", "b", "m", "y"]
+    colors = ["r", "y", "g", "b", "m"]
     fig = plt.figure()
     for i in range(1, 6):
         filteredTrain = trainData[trainData["TL"]==i]
@@ -44,7 +44,7 @@ def printConfusionMatrix(labeledClasses, groundTruth, titleStr="Confusion Matrix
         print("\n"+str(i)+"\t\t", end="")
         for j in range(0,num_classes):
             print(confusionMat[i,j], end="\t\t")
-    print ("\n"+str(totalCorrect)+"/"+str(totalNum)+" = "+"%.2f" % round((totalCorrect/totalNum*100),2)+"%")
+    print ("\n"+str(totalCorrect)+"/"+str(totalNum)+" = "+"%.2f" % round((totalCorrect/totalNum*100),2)+"%\n")
 
 
 def kNN(trainData, testData, k=1, feedback_classification=False):
@@ -82,7 +82,32 @@ def kNN(trainData, testData, k=1, feedback_classification=False):
 data = pd.read_csv("knnDataSet.csv")
 trainData = data[data["L"].notnull()]
 testData = data[data["L"].isnull()]
+
+#PART 1: Plot and save the ground truth scatter plot for the input data
 plotData(trainData, testData, display_figure=False, pdf_name="GroundTruth.pdf")
-newLabels = kNN(trainData[['x', 'y', 'L']], testData[['x', 'y']], k=1, feedback_classification=False)
-printConfusionMatrix(newLabels, testData[['TL']].as_matrix())
-plotData(trainData, testData, classifiedLabels=newLabels, pdf_name="K1.pdf", display_figure=False)
+
+#PART 3: Classify, plot, and display the confusion matrix where the training data does not update
+testStr = "NoDataUpdate"
+for k in [1,5,10,20]:
+    thisTestStr = str(k)+"K_"+testStr
+    newLabels = kNN(trainData[['x', 'y', 'L']], testData[['x', 'y']], k=k, feedback_classification=False)
+    printConfusionMatrix(newLabels, testData[['TL']].as_matrix(), titleStr="Confusion Matrix For " +thisTestStr + ":")
+    plotData(trainData, testData, classifiedLabels=newLabels, pdf_name=thisTestStr+".pdf", display_figure=False)
+
+#PART 4: Classify, plot, and display the confusion matrix where the training data is sorted by TL, and training data is updated over time
+testStr = "SortedUpdate"
+for k in [1,5,10]:
+    testData = testData.sort_values(["TL"],ascending=True)
+    thisTestStr = str(k)+"K_"+testStr
+    newLabels = kNN(trainData[['x', 'y', 'L']], testData[['x', 'y']], k=k, feedback_classification=True)
+    printConfusionMatrix(newLabels, testData[['TL']].as_matrix(), titleStr="Confusion Matrix For " +thisTestStr + ":")
+    plotData(trainData, testData, classifiedLabels=newLabels, pdf_name=thisTestStr+".pdf", display_figure=False)
+
+#PART 5: Classify, plot, and display the confusion matrix where the training data is randomized, and training data is updated over time
+testStr = "RandomUpdate"
+for k in [1,5,10]:
+    testData = testData.sample(frac=1)
+    thisTestStr = str(k)+"K_"+testStr
+    newLabels = kNN(trainData[['x', 'y', 'L']], testData[['x', 'y']], k=k, feedback_classification=True)
+    printConfusionMatrix(newLabels, testData[['TL']].as_matrix(), titleStr="Confusion Matrix For " +thisTestStr + ":")
+    plotData(trainData, testData, classifiedLabels=newLabels, pdf_name=thisTestStr+".pdf", display_figure=False)
