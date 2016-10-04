@@ -5,15 +5,17 @@ import pandas as pd
 import numpy as np
 import numpy.matlib
 
-def plotData(pandasData, pdf_name="plot.pdf", display_figure=True):
+def plotData(trainData, testData, classifiedTestLabels=None, pdf_name="plot.pdf", display_figure=True):
     colors = ["r", "g", "b", "m", "y"]
     fig = plt.figure()
-    for i in range(1,6):
-        filtered = pandasData[pandasData["TL"]==i]
-        withL = filtered[filtered["L"].notnull()]
-        withoutL = filtered[filtered["L"].isnull()]
-        plt.scatter(withoutL["x"], withoutL["y"], c=colors[i-1], marker="x")
-        plt.scatter(withL["x"], withL["y"], c=colors[i-1], marker="o")
+    for i in range(1, 6):
+        filteredTrain = trainData[trainData["TL"]==i]
+        if classifiedTestLabels is not None:
+            filteredTest = testData[classifiedTestLabels == i]
+        else:
+            filteredTest = testData[testData["TL"] == i]
+        plt.scatter(filteredTest["x"], filteredTest["y"], c=colors[i - 1], marker="x")
+        plt.scatter(filteredTrain["x"], filteredTrain["y"], c=colors[i - 1], marker="o")
     if display_figure:
         plt.show()
     pp = PdfPages(pdf_name)
@@ -55,6 +57,7 @@ def kNN(trainData, testData, k=1, feedback_classification=False):
 data = pd.read_csv("knnDataSet.csv")
 trainData = data[data["L"].notnull()]
 testData = data[data["L"].isnull()]
-
-newLabels = kNN(trainData[['x', 'y', 'L']], testData[['x', 'y']], k=5, feedback_classification=True)
+plotData(trainData, testData, display_figure=False, pdf_name="GroundTruth.pdf")
+newLabels = kNN(trainData[['x', 'y', 'L']], testData[['x', 'y']], k=1, feedback_classification=False)
+plotData(trainData, testData, classifiedTestLabels=newLabels, pdf_name="K1.pdf", display_figure=False)
 print (newLabels)
