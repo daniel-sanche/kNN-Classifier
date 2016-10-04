@@ -2,6 +2,7 @@ from matplotlib import pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 import pandas as pd
 import numpy as np
+from scipy import stats
 
 #This function is used to render the data to a pdf file, and optionally display it in a figure window
 #trainData = the data that needs to be classified
@@ -90,8 +91,8 @@ def kNN(trainData, testData, k=1, feedback_classification=False):
         #sort the label array using these indices to find the top labels
         closestLabels = labelArr[sort_indices]
         closestLabels = closestLabels[0:k]
-        #take the median of the top k results to find the class
-        topResult = np.median(closestLabels)
+        #take the mode of the top k results to find the class
+        topResult = stats.mode(closestLabels)[0]
         #store it in the array of other results
         results[i] = topResult
         if feedback_classification:
